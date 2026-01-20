@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Domain modules
+    implementation project(":modules:domain:user")
+    implementation project(":modules:domain:gathering")
+    implementation project(":modules:domain:payment")
+
+    // JPA
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+
+    // 임시
+    implementation "org.springframework.boot:spring-boot-starter-security"
+}

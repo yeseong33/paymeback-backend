@@ -1,0 +1,10 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(":modules:domain:user")
+
+    // Page, Pageable 사용을 위한 최소 의존성 (Port에서 노출하므로 api로 선언)
+    api "org.springframework.data:spring-data-commons"
+}

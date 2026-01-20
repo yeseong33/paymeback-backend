@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+// Core module - 순수 인터페이스와 규칙만 포함
+// AOP, Redis 등 인프라 의존성 없음
+dependencies {
+    // No external dependencies - pure domain
+}

@@ -1,0 +1,13 @@
+plugins {
+    id 'java-library'
+}
+
+// Redis adapter - 다양한 Redis 기반 구현체 포함
+dependencies {
+    // Domain modules
+    implementation project(':modules:domain:rate-limit')
+    implementation project(':modules:domain:cache')
+
+    // Redis
+    implementation "org.springframework.boot:spring-boot-starter-data-redis"
+}

@@ -1,0 +1,48 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'java'
+}
+
+dependencies {
+    // Domain modules
+    implementation project(":modules:domain:user")
+    implementation project(":modules:domain:gathering")
+    implementation project(":modules:domain:rate-limit")
+    implementation project(":modules:domain:cache")
+    implementation project(":modules:domain:payment")
+
+    // Adapter modules
+    implementation project(":modules:adapter:jpa-adapter")
+    implementation project(":modules:adapter:aop-adapter")
+    implementation project(":modules:adapter:redis-adapter")
+
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // transaction
+    implementation "org.springframework:spring-tx"
+    implementation "org.springframework:spring-context"
+
+    // Database
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // QR Code Generation
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:javase:3.5.2'
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}

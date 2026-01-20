@@ -1,0 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
+// Payment domain - 순수 도메인 객체와 포트 인터페이스만 포함
+dependencies {
+}

@@ -1,0 +1,15 @@
+rootProject.name = "paymeback"
+
+include(":api")
+
+// Domain modules
+include(":modules:domain:user")
+include(":modules:domain:gathering")
+include(":modules:domain:rate-limit")
+include(":modules:domain:cache")
+include(":modules:domain:payment")
+
+// Adapter modules
+include(":modules:adapter:jpa-adapter")
+include(":modules:adapter:aop-adapter")
+include(":modules:adapter:redis-adapter")
