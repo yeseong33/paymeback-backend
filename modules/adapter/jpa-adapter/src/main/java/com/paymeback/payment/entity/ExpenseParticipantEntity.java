@@ -1,6 +1,6 @@
 package com.paymeback.payment.entity;
 
-import com.paymeback.gathering.entity.GatheringEntity;
+import com.paymeback.payment.domain.ShareType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -14,52 +14,51 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "payment_requests")
+@Table(name = "expense_participants")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class PaymentRequestEntity {
+public class ExpenseParticipantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gathering_id", nullable = false)
-    private GatheringEntity gathering;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalAmount;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amountPerPerson;
+    @Column(nullable = false)
+    private Long expenseId;
 
     @Column(nullable = false)
-    private int participantCount;
+    private Long userId;
 
-    @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private Instant expiresAt;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal shareAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ShareType shareType;
+
+    @Column(precision = 10, scale = 4)
+    private BigDecimal shareValue;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private Instant createdAt;
 
     @Builder
-    private PaymentRequestEntity(Long id, GatheringEntity gathering, BigDecimal totalAmount,
-                                  BigDecimal amountPerPerson, int participantCount, Instant expiresAt) {
-        this.id = id;
-        this.gathering = gathering;
-        this.totalAmount = totalAmount;
-        this.amountPerPerson = amountPerPerson;
-        this.participantCount = participantCount;
-        this.expiresAt = expiresAt;
+    private ExpenseParticipantEntity(Long expenseId, Long userId, BigDecimal shareAmount,
+        ShareType shareType, BigDecimal shareValue) {
+        this.expenseId = expenseId;
+        this.userId = userId;
+        this.shareAmount = shareAmount;
+        this.shareType = shareType;
+        this.shareValue = shareValue;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PaymentRequestEntity that = (PaymentRequestEntity) o;
+        ExpenseParticipantEntity that = (ExpenseParticipantEntity) o;
         return Objects.equals(id, that.id);
     }
 

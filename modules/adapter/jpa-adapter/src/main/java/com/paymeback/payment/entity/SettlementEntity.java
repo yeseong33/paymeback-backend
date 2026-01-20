@@ -1,7 +1,6 @@
 package com.paymeback.payment.entity;
 
-import com.paymeback.gathering.entity.GatheringParticipantEntity;
-import com.paymeback.payment.domain.PaymentStatus;
+import com.paymeback.payment.domain.SettlementStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,34 +15,34 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Entity
-@Table(name = "payments")
+@Table(name = "settlements")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class PaymentEntity {
+public class SettlementEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "participant_id", nullable = false)
-    private GatheringParticipantEntity participant;
+    @Column(nullable = false)
+    private Long gatheringId;
+
+    @Column(nullable = false)
+    private Long fromUserId;
+
+    @Column(nullable = false)
+    private Long toUserId;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PaymentStatus status;
-
-    @Column(unique = true)
-    private String externalTransactionId;
+    private SettlementStatus status;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private Instant completedAt;
-
-    private String failureReason;
+    private Instant settledAt;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
@@ -54,31 +53,31 @@ public class PaymentEntity {
     private Instant updatedAt;
 
     @Builder
-    private PaymentEntity(Long id, GatheringParticipantEntity participant, BigDecimal amount,
-                          PaymentStatus status, String externalTransactionId,
-                          Instant completedAt, String failureReason) {
-        this.id = id;
-        this.participant = participant;
+    private SettlementEntity(Long gatheringId, Long fromUserId, Long toUserId,
+        BigDecimal amount, SettlementStatus status, Instant settledAt) {
+        this.gatheringId = gatheringId;
+        this.fromUserId = fromUserId;
+        this.toUserId = toUserId;
         this.amount = amount;
-        this.status = status != null ? status : PaymentStatus.PENDING;
-        this.externalTransactionId = externalTransactionId;
-        this.completedAt = completedAt;
-        this.failureReason = failureReason;
+        this.status = status != null ? status : SettlementStatus.PENDING;
+        this.settledAt = settledAt;
     }
 
-    public void updateFromDomain(PaymentStatus status, String externalTransactionId,
-                                  Instant completedAt, String failureReason) {
+    public void updateFromDomain(Long gatheringId, Long fromUserId, Long toUserId,
+        BigDecimal amount, SettlementStatus status, Instant settledAt) {
+        this.gatheringId = gatheringId;
+        this.fromUserId = fromUserId;
+        this.toUserId = toUserId;
+        this.amount = amount;
         this.status = status;
-        this.externalTransactionId = externalTransactionId;
-        this.completedAt = completedAt;
-        this.failureReason = failureReason;
+        this.settledAt = settledAt;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PaymentEntity that = (PaymentEntity) o;
+        SettlementEntity that = (SettlementEntity) o;
         return Objects.equals(id, that.id);
     }
 

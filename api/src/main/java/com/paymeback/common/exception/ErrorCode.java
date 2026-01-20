@@ -42,13 +42,16 @@ public enum ErrorCode {
     NOT_GATHERING_OWNER(HttpStatus.FORBIDDEN, "G005", "모임 방장이 아닙니다."),
     GATHERING_NOT_READY_FOR_PAYMENT(HttpStatus.BAD_REQUEST, "G006", "결제 요청을 생성할 수 없는 상태입니다."),
 
-    // Payment
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "결제 정보를 찾을 수 없습니다."),
-    PAYMENT_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "P002", "결제 요청을 찾을 수 없습니다."),
-    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "P003", "이미 완료된 결제입니다."),
-    PAYMENT_EXPIRED(HttpStatus.BAD_REQUEST, "P004", "결제 요청이 만료되었습니다."),
-    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "P005", "결제 처리에 실패했습니다."),
-    INVALID_PAYMENT_AMOUNT(HttpStatus.BAD_REQUEST, "P006", "잘못된 결제 금액입니다.");
+    // Expense
+    EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "E001", "지출 내역을 찾을 수 없습니다."),
+    NOT_EXPENSE_OWNER(HttpStatus.FORBIDDEN, "E002", "지출 등록자가 아닙니다."),
+
+    // Settlement
+    SETTLEMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "S001", "정산 정보를 찾을 수 없습니다."),
+    NOT_SETTLEMENT_SENDER(HttpStatus.FORBIDDEN, "S002", "정산 송금자가 아닙니다."),
+    NOT_SETTLEMENT_RECEIVER(HttpStatus.FORBIDDEN, "S003", "정산 수령자가 아닙니다."),
+    SETTLEMENT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "S004", "이미 처리된 정산입니다."),
+    SETTLEMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "S005", "완료되지 않은 정산입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
