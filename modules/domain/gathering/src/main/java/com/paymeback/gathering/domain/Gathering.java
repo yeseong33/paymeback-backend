@@ -14,13 +14,15 @@ public record Gathering(
     Instant qrExpiresAt,
     GatheringStatus status,
     BigDecimal totalAmount,
-    Instant scheduledAt,
+    Instant startAt,
+    Instant endAt,
     List<Long> participantIds,
     Instant createdAt,
     Instant updatedAt
 ) {
 
-    public static Gathering create(String title, String description, Long ownerId, String qrCode, Instant qrExpiresAt) {
+    public static Gathering create(String title, String description, Long ownerId, String qrCode,
+                                    Instant qrExpiresAt, Instant startAt, Instant endAt) {
         return new Gathering(
             null,
             title,
@@ -30,7 +32,8 @@ public record Gathering(
             qrExpiresAt,
             GatheringStatus.ACTIVE,
             null,
-            null,
+            startAt,
+            endAt,
             List.of(),
             null,
             null
@@ -42,7 +45,7 @@ public record Gathering(
         return new Gathering(
             id, title, description, ownerId, qrCode, qrExpiresAt,
             GatheringStatus.PAYMENT_REQUESTED,
-            totalAmount, scheduledAt, participantIds, createdAt, updatedAt
+            totalAmount, startAt, endAt, participantIds, createdAt, updatedAt
         );
     }
 
@@ -50,7 +53,7 @@ public record Gathering(
         return new Gathering(
             id, title, description, ownerId, qrCode, qrExpiresAt,
             GatheringStatus.CLOSED,
-            totalAmount, scheduledAt, participantIds, createdAt, updatedAt
+            totalAmount, startAt, endAt, participantIds, createdAt, updatedAt
         );
     }
 
@@ -60,17 +63,18 @@ public record Gathering(
         }
         return new Gathering(
             id, title, description, ownerId, newQrCode, newExpiresAt,
-            status, totalAmount, scheduledAt, participantIds, createdAt, updatedAt
+            status, totalAmount, startAt, endAt, participantIds, createdAt, updatedAt
         );
     }
 
-    public Gathering update(String newTitle, String newDescription, Instant newScheduledAt) {
+    public Gathering update(String newTitle, String newDescription, Instant newStartAt, Instant newEndAt) {
         return new Gathering(
             id,
             newTitle != null ? newTitle : title,
             newDescription != null ? newDescription : description,
             ownerId, qrCode, qrExpiresAt, status, totalAmount,
-            newScheduledAt != null ? newScheduledAt : scheduledAt,
+            newStartAt != null ? newStartAt : startAt,
+            newEndAt != null ? newEndAt : endAt,
             participantIds, createdAt, updatedAt
         );
     }

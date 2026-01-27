@@ -51,7 +51,8 @@ public enum ErrorCode {
     NOT_SETTLEMENT_SENDER(HttpStatus.FORBIDDEN, "S002", "정산 송금자가 아닙니다."),
     NOT_SETTLEMENT_RECEIVER(HttpStatus.FORBIDDEN, "S003", "정산 수령자가 아닙니다."),
     SETTLEMENT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "S004", "이미 처리된 정산입니다."),
-    SETTLEMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "S005", "완료되지 않은 정산입니다.");
+    SETTLEMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "S005", "완료되지 않은 정산입니다."),
+    SETTLEMENT_IN_PROGRESS(HttpStatus.CONFLICT, "S006", "이미 진행 중이거나 완료된 정산이 있어 재계산할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

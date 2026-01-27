@@ -1,7 +1,9 @@
 package com.paymeback.payment.adapter;
 
 import com.paymeback.payment.domain.ExpenseParticipant;
+import com.paymeback.payment.entity.ExpenseEntity;
 import com.paymeback.payment.entity.ExpenseParticipantEntity;
+import com.paymeback.user.entity.UserEntity;
 
 public final class ExpenseParticipantJpaMapper {
 
@@ -24,14 +26,14 @@ public final class ExpenseParticipantJpaMapper {
         );
     }
 
-    public static ExpenseParticipantEntity toEntity(ExpenseParticipant domain) {
+    public static ExpenseParticipantEntity toEntity(ExpenseParticipant domain, ExpenseEntity expense, UserEntity user) {
         if (domain == null) {
             return null;
         }
 
         return ExpenseParticipantEntity.builder()
-            .expenseId(domain.expenseId())
-            .userId(domain.userId())
+            .expense(expense)
+            .user(user)
             .shareAmount(domain.shareAmount())
             .shareType(domain.shareType())
             .shareValue(domain.shareValue())

@@ -20,7 +20,8 @@ public record GatheringResponse(
     BigDecimal amountPerPerson,
     int participantCount,
     List<ParticipantResponse> participants,
-    Long scheduledAt,
+    Long startAt,
+    Long endAt,
     Long createdAt
 ) {
 
@@ -37,7 +38,8 @@ public record GatheringResponse(
             gathering.getAmountPerPerson(),
             participants.size(),
             participants,
-            gathering.scheduledAt() != null ? gathering.scheduledAt().toEpochMilli() : null,
+            gathering.startAt() != null ? gathering.startAt().toEpochMilli() : null,
+            gathering.endAt() != null ? gathering.endAt().toEpochMilli() : null,
             gathering.createdAt() != null ? gathering.createdAt().toEpochMilli() : null
         );
     }
@@ -55,7 +57,8 @@ public record GatheringResponse(
             gathering.getAmountPerPerson(),
             participants.size(),
             participants,
-            gathering.scheduledAt() != null ? gathering.scheduledAt().toEpochMilli() : null,
+            gathering.startAt() != null ? gathering.startAt().toEpochMilli() : null,
+            gathering.endAt() != null ? gathering.endAt().toEpochMilli() : null,
             gathering.createdAt() != null ? gathering.createdAt().toEpochMilli() : null
         );
     }

@@ -10,6 +10,10 @@ public record CreateGatheringRequest(
     String title,
 
     @Size(max = 500, message = "모임 설명은 500자 이하여야 합니다.")
-    String description
+    String description,
+
+    Long startAt,  // epoch millis
+
+    Long endAt     // epoch millis
 ) {
 }

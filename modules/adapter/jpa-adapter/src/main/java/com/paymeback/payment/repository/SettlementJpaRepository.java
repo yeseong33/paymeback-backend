@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface SettlementJpaRepository extends JpaRepository<SettlementEntity, Long> {
 
-    List<SettlementEntity> findByGatheringIdOrderByCreatedAtDesc(Long gatheringId);
+    List<SettlementEntity> findByGathering_IdOrderByCreatedAtDesc(Long gatheringId);
 
-    List<SettlementEntity> findByFromUserIdOrderByCreatedAtDesc(Long fromUserId);
+    List<SettlementEntity> findByFromUser_IdOrderByCreatedAtDesc(Long fromUserId);
 
-    List<SettlementEntity> findByToUserIdOrderByCreatedAtDesc(Long toUserId);
+    List<SettlementEntity> findByToUser_IdOrderByCreatedAtDesc(Long toUserId);
 
-    List<SettlementEntity> findByGatheringIdAndStatus(Long gatheringId, SettlementStatus status);
+    List<SettlementEntity> findByGathering_IdAndStatus(Long gatheringId, SettlementStatus status);
 
-    void deleteByGatheringId(Long gatheringId);
+    void deleteByGathering_Id(Long gatheringId);
 }

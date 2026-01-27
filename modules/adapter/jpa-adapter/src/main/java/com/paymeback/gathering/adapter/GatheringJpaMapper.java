@@ -30,7 +30,8 @@ public final class GatheringJpaMapper {
             entity.getQrExpiresAt(),
             entity.getStatus(),
             entity.getTotalAmount(),
-            entity.getScheduledAt(),
+            entity.getStartAt(),
+            entity.getEndAt(),
             participantIds,
             entity.getCreatedAt(),
             entity.getUpdatedAt()
@@ -50,7 +51,8 @@ public final class GatheringJpaMapper {
             .qrExpiresAt(domain.qrExpiresAt())
             .status(domain.status())
             .totalAmount(domain.totalAmount())
-            .scheduledAt(domain.scheduledAt())
+            .startAt(domain.startAt())
+            .endAt(domain.endAt())
             .build();
     }
 }

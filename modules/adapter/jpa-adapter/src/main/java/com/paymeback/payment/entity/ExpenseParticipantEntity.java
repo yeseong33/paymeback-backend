@@ -1,6 +1,7 @@
 package com.paymeback.payment.entity;
 
 import com.paymeback.payment.domain.ShareType;
+import com.paymeback.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,11 +25,13 @@ public class ExpenseParticipantEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long expenseId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "expense_id", nullable = false)
+    private ExpenseEntity expense;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal shareAmount;
@@ -45,13 +48,21 @@ public class ExpenseParticipantEntity {
     private Instant createdAt;
 
     @Builder
-    private ExpenseParticipantEntity(Long expenseId, Long userId, BigDecimal shareAmount,
+    private ExpenseParticipantEntity(ExpenseEntity expense, UserEntity user, BigDecimal shareAmount,
         ShareType shareType, BigDecimal shareValue) {
-        this.expenseId = expenseId;
-        this.userId = userId;
+        this.expense = expense;
+        this.user = user;
         this.shareAmount = shareAmount;
         this.shareType = shareType;
         this.shareValue = shareValue;
+    }
+
+    public Long getExpenseId() {
+        return expense != null ? expense.getId() : null;
+    }
+
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
     }
 
     @Override

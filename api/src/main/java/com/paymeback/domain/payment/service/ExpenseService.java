@@ -133,16 +133,19 @@ public class ExpenseService {
 
         switch (shareType) {
             case EQUAL -> {
-                BigDecimal shareAmount = totalAmount.divide(
-                    BigDecimal.valueOf(participantCount),
-                    2,
-                    RoundingMode.HALF_UP
+                BigDecimal shareAmount = roundDownToTen(
+                    totalAmount.divide(BigDecimal.valueOf(participantCount), 0, RoundingMode.DOWN)
                 );
-                for (CreateExpenseRequest.ParticipantShare ps : participantShares) {
+                BigDecimal allocated = shareAmount.multiply(BigDecimal.valueOf(participantCount - 1));
+                BigDecimal lastShareAmount = totalAmount.subtract(allocated);
+
+                for (int i = 0; i < participantShares.size(); i++) {
+                    CreateExpenseRequest.ParticipantShare ps = participantShares.get(i);
+                    BigDecimal amount = (i == participantShares.size() - 1) ? lastShareAmount : shareAmount;
                     participants.add(ExpenseParticipant.create(
                         expenseId,
                         ps.userId(),
-                        shareAmount,
+                        amount,
                         ShareType.EQUAL,
                         null
                     ));
@@ -163,9 +166,10 @@ public class ExpenseService {
             case PERCENTAGE -> {
                 for (CreateExpenseRequest.ParticipantShare ps : participantShares) {
                     BigDecimal percentage = ps.shareValue() != null ? ps.shareValue() : BigDecimal.ZERO;
-                    BigDecimal shareAmount = totalAmount
-                        .multiply(percentage)
-                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    BigDecimal shareAmount = roundToTen(
+                        totalAmount.multiply(percentage)
+                            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
+                    );
                     participants.add(ExpenseParticipant.create(
                         expenseId,
                         ps.userId(),
@@ -178,5 +182,15 @@ public class ExpenseService {
         }
 
         return participants;
+    }
+
+    private static final BigDecimal TEN = BigDecimal.TEN;
+
+    private BigDecimal roundDownToTen(BigDecimal amount) {
+        return amount.divide(TEN, 0, RoundingMode.DOWN).multiply(TEN);
+    }
+
+    private BigDecimal roundToTen(BigDecimal amount) {
+        return amount.divide(TEN, 0, RoundingMode.HALF_UP).multiply(TEN);
     }
 }

@@ -41,12 +41,17 @@ public class GatheringService {
         // QR 코드 생성
         String qrCode = qrCodeService.generateQRCode();
 
+        Instant startAt = request.startAt() != null ? Instant.ofEpochMilli(request.startAt()) : null;
+        Instant endAt = request.endAt() != null ? Instant.ofEpochMilli(request.endAt()) : null;
+
         Gathering gathering = Gathering.create(
             request.title(),
             request.description(),
             owner.id(),
             qrCode,
-            qrCodeService.calculateExpirationTime()
+            qrCodeService.calculateExpirationTime(),
+            startAt,
+            endAt
         );
 
         Gathering savedGathering = gatheringRepository.save(gathering);
@@ -168,8 +173,9 @@ public class GatheringService {
             throw new BusinessException(ErrorCode.NOT_GATHERING_OWNER);
         }
 
-        Instant scheduledAt = request.scheduledAt() != null ? Instant.ofEpochMilli(request.scheduledAt()) : null;
-        Gathering updatedGathering = gathering.update(request.title(), request.description(), scheduledAt);
+        Instant startAt = request.startAt() != null ? Instant.ofEpochMilli(request.startAt()) : null;
+        Instant endAt = request.endAt() != null ? Instant.ofEpochMilli(request.endAt()) : null;
+        Gathering updatedGathering = gathering.update(request.title(), request.description(), startAt, endAt);
         Gathering savedGathering = gatheringRepository.save(updatedGathering);
 
         log.info("모임이 수정되었습니다. gathering: {}", gatheringId);

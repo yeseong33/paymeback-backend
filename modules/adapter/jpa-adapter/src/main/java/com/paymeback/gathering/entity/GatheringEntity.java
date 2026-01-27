@@ -51,7 +51,10 @@ public class GatheringEntity {
     private BigDecimal totalAmount;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
-    private Instant scheduledAt;
+    private Instant startAt;
+
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private Instant endAt;
 
     @OneToMany(mappedBy = "gathering", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GatheringParticipantEntity> participants = new ArrayList<>();
@@ -66,7 +69,7 @@ public class GatheringEntity {
 
     @Builder
     private GatheringEntity(String title, String description, UserEntity owner, String qrCode,
-        Instant qrExpiresAt, GatheringStatus status, BigDecimal totalAmount, Instant scheduledAt) {
+        Instant qrExpiresAt, GatheringStatus status, BigDecimal totalAmount, Instant startAt, Instant endAt) {
         this.title = title;
         this.description = description;
         this.owner = owner;
@@ -74,18 +77,20 @@ public class GatheringEntity {
         this.qrExpiresAt = qrExpiresAt;
         this.status = status != null ? status : GatheringStatus.ACTIVE;
         this.totalAmount = totalAmount;
-        this.scheduledAt = scheduledAt;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     public void updateFromDomain(String title, String description, String qrCode,
-        Instant qrExpiresAt, GatheringStatus status, BigDecimal totalAmount, Instant scheduledAt) {
+        Instant qrExpiresAt, GatheringStatus status, BigDecimal totalAmount, Instant startAt, Instant endAt) {
         this.title = title;
         this.description = description;
         this.qrCode = qrCode;
         this.qrExpiresAt = qrExpiresAt;
         this.status = status;
         this.totalAmount = totalAmount;
-        this.scheduledAt = scheduledAt;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     @Override

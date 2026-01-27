@@ -1,7 +1,9 @@
 package com.paymeback.payment.adapter;
 
+import com.paymeback.gathering.entity.GatheringEntity;
 import com.paymeback.payment.domain.Expense;
 import com.paymeback.payment.entity.ExpenseEntity;
+import com.paymeback.user.entity.UserEntity;
 
 public final class ExpenseJpaMapper {
 
@@ -28,14 +30,14 @@ public final class ExpenseJpaMapper {
         );
     }
 
-    public static ExpenseEntity toEntity(Expense domain) {
+    public static ExpenseEntity toEntity(Expense domain, GatheringEntity gathering, UserEntity payer) {
         if (domain == null) {
             return null;
         }
 
         return ExpenseEntity.builder()
-            .gatheringId(domain.gatheringId())
-            .payerId(domain.payerId())
+            .gathering(gathering)
+            .payer(payer)
             .totalAmount(domain.totalAmount())
             .description(domain.description())
             .location(domain.location())

@@ -1,6 +1,8 @@
 package com.paymeback.payment.entity;
 
+import com.paymeback.gathering.entity.GatheringEntity;
 import com.paymeback.payment.domain.SettlementStatus;
+import com.paymeback.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,14 +27,17 @@ public class SettlementEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long gatheringId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gathering_id", nullable = false)
+    private GatheringEntity gathering;
 
-    @Column(nullable = false)
-    private Long fromUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_user_id", nullable = false)
+    private UserEntity fromUser;
 
-    @Column(nullable = false)
-    private Long toUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "to_user_id", nullable = false)
+    private UserEntity toUser;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
@@ -53,21 +58,29 @@ public class SettlementEntity {
     private Instant updatedAt;
 
     @Builder
-    private SettlementEntity(Long gatheringId, Long fromUserId, Long toUserId,
+    private SettlementEntity(GatheringEntity gathering, UserEntity fromUser, UserEntity toUser,
         BigDecimal amount, SettlementStatus status, Instant settledAt) {
-        this.gatheringId = gatheringId;
-        this.fromUserId = fromUserId;
-        this.toUserId = toUserId;
+        this.gathering = gathering;
+        this.fromUser = fromUser;
+        this.toUser = toUser;
         this.amount = amount;
         this.status = status != null ? status : SettlementStatus.PENDING;
         this.settledAt = settledAt;
     }
 
-    public void updateFromDomain(Long gatheringId, Long fromUserId, Long toUserId,
-        BigDecimal amount, SettlementStatus status, Instant settledAt) {
-        this.gatheringId = gatheringId;
-        this.fromUserId = fromUserId;
-        this.toUserId = toUserId;
+    public Long getGatheringId() {
+        return gathering != null ? gathering.getId() : null;
+    }
+
+    public Long getFromUserId() {
+        return fromUser != null ? fromUser.getId() : null;
+    }
+
+    public Long getToUserId() {
+        return toUser != null ? toUser.getId() : null;
+    }
+
+    public void updateFromDomain(BigDecimal amount, SettlementStatus status, Instant settledAt) {
         this.amount = amount;
         this.status = status;
         this.settledAt = settledAt;

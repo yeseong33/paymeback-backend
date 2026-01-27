@@ -1,6 +1,8 @@
 package com.paymeback.payment.entity;
 
+import com.paymeback.gathering.entity.GatheringEntity;
 import com.paymeback.payment.domain.ExpenseCategory;
+import com.paymeback.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,6 +14,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -25,11 +29,16 @@ public class ExpenseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long gatheringId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gathering_id", nullable = false)
+    private GatheringEntity gathering;
 
-    @Column(nullable = false)
-    private Long payerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payer_id", nullable = false)
+    private UserEntity payer;
+
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExpenseParticipantEntity> participants = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
@@ -56,11 +65,11 @@ public class ExpenseEntity {
     private Instant updatedAt;
 
     @Builder
-    private ExpenseEntity(Long gatheringId, Long payerId, BigDecimal totalAmount,
+    private ExpenseEntity(GatheringEntity gathering, UserEntity payer, BigDecimal totalAmount,
         String description, String location, ExpenseCategory category,
         Instant paidAt, String receiptImageUrl) {
-        this.gatheringId = gatheringId;
-        this.payerId = payerId;
+        this.gathering = gathering;
+        this.payer = payer;
         this.totalAmount = totalAmount;
         this.description = description;
         this.location = location;
@@ -69,11 +78,16 @@ public class ExpenseEntity {
         this.receiptImageUrl = receiptImageUrl;
     }
 
-    public void updateFromDomain(Long gatheringId, Long payerId, BigDecimal totalAmount,
-        String description, String location, ExpenseCategory category,
-        Instant paidAt, String receiptImageUrl) {
-        this.gatheringId = gatheringId;
-        this.payerId = payerId;
+    public Long getGatheringId() {
+        return gathering != null ? gathering.getId() : null;
+    }
+
+    public Long getPayerId() {
+        return payer != null ? payer.getId() : null;
+    }
+
+    public void updateFromDomain(BigDecimal totalAmount, String description, String location,
+        ExpenseCategory category, Instant paidAt, String receiptImageUrl) {
         this.totalAmount = totalAmount;
         this.description = description;
         this.location = location;

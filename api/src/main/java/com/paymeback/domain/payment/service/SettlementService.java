@@ -42,6 +42,12 @@ public class SettlementService {
         gatheringRepository.findById(gatheringId)
             .orElseThrow(() -> new BusinessException(ErrorCode.GATHERING_NOT_FOUND));
 
+        List<Settlement> completedSettlements = settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.COMPLETED);
+        List<Settlement> confirmedSettlements = settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.CONFIRMED);
+        if (!completedSettlements.isEmpty() || !confirmedSettlements.isEmpty()) {
+            throw new BusinessException(ErrorCode.SETTLEMENT_IN_PROGRESS);
+        }
+
         settlementRepository.deleteByGatheringId(gatheringId);
 
         List<Expense> expenses = expenseRepository.findByGatheringId(gatheringId);

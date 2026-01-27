@@ -1,7 +1,9 @@
 package com.paymeback.payment.adapter;
 
+import com.paymeback.gathering.entity.GatheringEntity;
 import com.paymeback.payment.domain.Settlement;
 import com.paymeback.payment.entity.SettlementEntity;
+import com.paymeback.user.entity.UserEntity;
 
 public final class SettlementJpaMapper {
 
@@ -26,15 +28,16 @@ public final class SettlementJpaMapper {
         );
     }
 
-    public static SettlementEntity toEntity(Settlement domain) {
+    public static SettlementEntity toEntity(Settlement domain, GatheringEntity gathering,
+                                            UserEntity fromUser, UserEntity toUser) {
         if (domain == null) {
             return null;
         }
 
         return SettlementEntity.builder()
-            .gatheringId(domain.gatheringId())
-            .fromUserId(domain.fromUserId())
-            .toUserId(domain.toUserId())
+            .gathering(gathering)
+            .fromUser(fromUser)
+            .toUser(toUser)
             .amount(domain.amount())
             .status(domain.status())
             .settledAt(domain.settledAt())

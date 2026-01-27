@@ -35,7 +35,8 @@ public class GatheringRepositoryJpaAdapter implements GatheringRepositoryPort {
                 gathering.qrExpiresAt(),
                 gathering.status(),
                 gathering.totalAmount(),
-                gathering.scheduledAt()
+                gathering.startAt(),
+                gathering.endAt()
             );
         } else {
             // Create new

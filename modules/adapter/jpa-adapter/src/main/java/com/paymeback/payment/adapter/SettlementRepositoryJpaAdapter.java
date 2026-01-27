@@ -1,10 +1,12 @@
 package com.paymeback.payment.adapter;
 
+import com.paymeback.gathering.repository.GatheringJpaRepository;
 import com.paymeback.payment.domain.Settlement;
 import com.paymeback.payment.domain.SettlementStatus;
 import com.paymeback.payment.entity.SettlementEntity;
 import com.paymeback.payment.repository.SettlementJpaRepository;
 import com.paymeback.payment.repository.SettlementRepositoryPort;
+import com.paymeback.user.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ import java.util.Optional;
 public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort {
 
     private final SettlementJpaRepository settlementRepo;
+    private final GatheringJpaRepository gatheringRepo;
+    private final UserJpaRepository userRepo;
 
     @Override
     public Settlement save(Settlement settlement) {
@@ -26,15 +30,18 @@ public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort 
             entity = settlementRepo.findById(settlement.id())
                 .orElseThrow(() -> new IllegalArgumentException("Settlement not found: " + settlement.id()));
             entity.updateFromDomain(
-                settlement.gatheringId(),
-                settlement.fromUserId(),
-                settlement.toUserId(),
                 settlement.amount(),
                 settlement.status(),
                 settlement.settledAt()
             );
         } else {
-            entity = SettlementJpaMapper.toEntity(settlement);
+            var gathering = gatheringRepo.findById(settlement.gatheringId())
+                .orElseThrow(() -> new IllegalArgumentException("Gathering not found: " + settlement.gatheringId()));
+            var fromUser = userRepo.findById(settlement.fromUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + settlement.fromUserId()));
+            var toUser = userRepo.findById(settlement.toUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + settlement.toUserId()));
+            entity = SettlementJpaMapper.toEntity(settlement, gathering, fromUser, toUser);
         }
 
         var saved = settlementRepo.save(entity);
@@ -44,7 +51,15 @@ public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort 
     @Override
     public List<Settlement> saveAll(List<Settlement> settlements) {
         var entities = settlements.stream()
-            .map(SettlementJpaMapper::toEntity)
+            .map(s -> {
+                var gathering = gatheringRepo.findById(s.gatheringId())
+                    .orElseThrow(() -> new IllegalArgumentException("Gathering not found: " + s.gatheringId()));
+                var fromUser = userRepo.findById(s.fromUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + s.fromUserId()));
+                var toUser = userRepo.findById(s.toUserId())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + s.toUserId()));
+                return SettlementJpaMapper.toEntity(s, gathering, fromUser, toUser);
+            })
             .toList();
         var saved = settlementRepo.saveAll(entities);
         return saved.stream()
@@ -59,28 +74,28 @@ public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort 
 
     @Override
     public List<Settlement> findByGatheringId(Long gatheringId) {
-        return settlementRepo.findByGatheringIdOrderByCreatedAtDesc(gatheringId).stream()
+        return settlementRepo.findByGathering_IdOrderByCreatedAtDesc(gatheringId).stream()
             .map(SettlementJpaMapper::toDomain)
             .toList();
     }
 
     @Override
     public List<Settlement> findByFromUserId(Long fromUserId) {
-        return settlementRepo.findByFromUserIdOrderByCreatedAtDesc(fromUserId).stream()
+        return settlementRepo.findByFromUser_IdOrderByCreatedAtDesc(fromUserId).stream()
             .map(SettlementJpaMapper::toDomain)
             .toList();
     }
 
     @Override
     public List<Settlement> findByToUserId(Long toUserId) {
-        return settlementRepo.findByToUserIdOrderByCreatedAtDesc(toUserId).stream()
+        return settlementRepo.findByToUser_IdOrderByCreatedAtDesc(toUserId).stream()
             .map(SettlementJpaMapper::toDomain)
             .toList();
     }
 
     @Override
     public List<Settlement> findByGatheringIdAndStatus(Long gatheringId, SettlementStatus status) {
-        return settlementRepo.findByGatheringIdAndStatus(gatheringId, status).stream()
+        return settlementRepo.findByGathering_IdAndStatus(gatheringId, status).stream()
             .map(SettlementJpaMapper::toDomain)
             .toList();
     }
@@ -88,6 +103,6 @@ public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort 
     @Override
     @Transactional
     public void deleteByGatheringId(Long gatheringId) {
-        settlementRepo.deleteByGatheringId(gatheringId);
+        settlementRepo.deleteByGathering_Id(gatheringId);
     }
 }

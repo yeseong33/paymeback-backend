@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface ExpenseParticipantJpaRepository extends JpaRepository<ExpenseParticipantEntity, Long> {
 
-    List<ExpenseParticipantEntity> findByExpenseId(Long expenseId);
+    List<ExpenseParticipantEntity> findByExpense_Id(Long expenseId);
 
-    List<ExpenseParticipantEntity> findByUserId(Long userId);
+    List<ExpenseParticipantEntity> findByUser_Id(Long userId);
 
-    void deleteByExpenseId(Long expenseId);
+    void deleteByExpense_Id(Long expenseId);
 }

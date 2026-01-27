@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ExpenseJpaRepository extends JpaRepository<ExpenseEntity, Long> {
 
-    List<ExpenseEntity> findByGatheringIdOrderByPaidAtDesc(Long gatheringId);
+    List<ExpenseEntity> findByGathering_IdOrderByPaidAtDesc(Long gatheringId);
 
-    List<ExpenseEntity> findByPayerIdOrderByPaidAtDesc(Long payerId);
+    List<ExpenseEntity> findByPayer_IdOrderByPaidAtDesc(Long payerId);
 }

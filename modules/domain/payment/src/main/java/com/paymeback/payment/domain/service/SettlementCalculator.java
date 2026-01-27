@@ -5,6 +5,7 @@ import com.paymeback.payment.domain.ExpenseParticipant;
 import com.paymeback.payment.domain.Settlement;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -76,7 +77,11 @@ public class SettlementCalculator {
             BigDecimal credit = creditor.getValue();
             BigDecimal debt = debtor.getValue().abs();
 
-            BigDecimal settlementAmount = credit.min(debt);
+            BigDecimal settlementAmount = roundToTen(credit.min(debt));
+
+            if (settlementAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
 
             settlements.add(Settlement.create(
                 gatheringId,
@@ -97,5 +102,9 @@ public class SettlementCalculator {
         }
 
         return settlements;
+    }
+
+    private BigDecimal roundToTen(BigDecimal amount) {
+        return amount.divide(BigDecimal.TEN, 0, RoundingMode.HALF_UP).multiply(BigDecimal.TEN);
     }
 }

@@ -4,6 +4,7 @@ import com.paymeback.cache.KeyValueStore;
 import com.paymeback.common.exception.BusinessException;
 import com.paymeback.common.exception.ErrorCode;
 import com.paymeback.domain.user.service.UserService;
+import com.paymeback.ratelimit.RateLimit;
 import com.paymeback.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ public class IdentityService {
         otpService.deleteOtp(email);
     }
 
+    @RateLimit(key = "resendOtp", maxAttempts = 5, windowSeconds = 3600)
     public void resendOtp(String email) {
         // 사용자 존재 여부 확인
         User user = userService.findByEmail(email);
