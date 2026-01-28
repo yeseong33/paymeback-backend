@@ -59,6 +59,7 @@ public class UserService {
         log.info("사용자 이메일 인증이 완료되었습니다. email: {}", email);
     }
 
+
     public boolean isEmailDuplicate(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -74,8 +75,6 @@ public class UserService {
         RawPassword rawPassword = new RawPassword(password);
         RawPassword confirm = new RawPassword(confirmPassword);
 
-        if (!rawPassword.match(confirm)) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
-        }
+        rawPassword.matchOrThrow(confirm);
     }
 }
