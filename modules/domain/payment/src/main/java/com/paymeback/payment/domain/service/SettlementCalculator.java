@@ -20,13 +20,23 @@ public class SettlementCalculator {
         List<Expense> expenses,
         List<ExpenseParticipant> participants
     ) {
-        Map<Long, BigDecimal> balances = calculateBalances(expenses, participants);
+        return calculate(gatheringId, expenses, participants, List.of());
+    }
+
+    public List<Settlement> calculate(
+        Long gatheringId,
+        List<Expense> expenses,
+        List<ExpenseParticipant> participants,
+        List<Settlement> completedSettlements
+    ) {
+        Map<Long, BigDecimal> balances = calculateBalances(expenses, participants, completedSettlements);
         return generateSettlements(gatheringId, balances);
     }
 
     private Map<Long, BigDecimal> calculateBalances(
         List<Expense> expenses,
-        List<ExpenseParticipant> participants
+        List<ExpenseParticipant> participants,
+        List<Settlement> completedSettlements
     ) {
         Map<Long, BigDecimal> balances = new HashMap<>();
 
@@ -44,6 +54,11 @@ public class SettlementCalculator {
                 participant.shareAmount().negate(),
                 BigDecimal::add
             );
+        }
+
+        for (Settlement s : completedSettlements) {
+            balances.merge(s.fromUserId(), s.amount(), BigDecimal::add);
+            balances.merge(s.toUserId(), s.amount().negate(), BigDecimal::add);
         }
 
         return balances;

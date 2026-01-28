@@ -17,4 +17,6 @@ public interface SettlementJpaRepository extends JpaRepository<SettlementEntity,
     List<SettlementEntity> findByGathering_IdAndStatus(Long gatheringId, SettlementStatus status);
 
     void deleteByGathering_Id(Long gatheringId);
+
+    void deleteByGathering_IdAndStatus(Long gatheringId, SettlementStatus status);
 }

@@ -105,4 +105,10 @@ public class SettlementRepositoryJpaAdapter implements SettlementRepositoryPort 
     public void deleteByGatheringId(Long gatheringId) {
         settlementRepo.deleteByGathering_Id(gatheringId);
     }
+
+    @Override
+    @Transactional
+    public void deleteByGatheringIdAndStatus(Long gatheringId, SettlementStatus status) {
+        settlementRepo.deleteByGathering_IdAndStatus(gatheringId, status);
+    }
 }

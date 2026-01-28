@@ -15,4 +15,5 @@ public interface SettlementRepositoryPort {
     List<Settlement> findByToUserId(Long toUserId);
     List<Settlement> findByGatheringIdAndStatus(Long gatheringId, SettlementStatus status);
     void deleteByGatheringId(Long gatheringId);
+    void deleteByGatheringIdAndStatus(Long gatheringId, SettlementStatus status);
 }

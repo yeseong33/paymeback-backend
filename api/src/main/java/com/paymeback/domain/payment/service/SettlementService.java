@@ -2,6 +2,7 @@ package com.paymeback.domain.payment.service;
 
 import com.paymeback.common.exception.BusinessException;
 import com.paymeback.common.exception.ErrorCode;
+import com.paymeback.domain.gathering.service.GatheringService;
 import com.paymeback.domain.payment.dto.SettlementResponse;
 import com.paymeback.domain.user.service.UserService;
 import com.paymeback.gathering.repository.GatheringRepositoryPort;
@@ -31,7 +32,7 @@ public class SettlementService {
     private final SettlementRepositoryPort settlementRepository;
     private final ExpenseRepositoryPort expenseRepository;
     private final ExpenseParticipantRepositoryPort participantRepository;
-    private final GatheringRepositoryPort gatheringRepository;
+    private final GatheringService gatheringService;
     private final UserService userService;
     private final SettlementCalculator settlementCalculator = new SettlementCalculator();
 
@@ -39,16 +40,13 @@ public class SettlementService {
     public List<SettlementResponse> calculateSettlements(Long gatheringId, String userEmail) {
         userService.findByEmail(userEmail);
 
-        gatheringRepository.findById(gatheringId)
-            .orElseThrow(() -> new BusinessException(ErrorCode.GATHERING_NOT_FOUND));
+        gatheringService.existById(gatheringId);
 
-        List<Settlement> completedSettlements = settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.COMPLETED);
-        List<Settlement> confirmedSettlements = settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.CONFIRMED);
-        if (!completedSettlements.isEmpty() || !confirmedSettlements.isEmpty()) {
-            throw new BusinessException(ErrorCode.SETTLEMENT_IN_PROGRESS);
-        }
+        List<Settlement> completedSettlements = new ArrayList<>();
+        completedSettlements.addAll(settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.COMPLETED));
+        completedSettlements.addAll(settlementRepository.findByGatheringIdAndStatus(gatheringId, SettlementStatus.CONFIRMED));
 
-        settlementRepository.deleteByGatheringId(gatheringId);
+        settlementRepository.deleteByGatheringIdAndStatus(gatheringId, SettlementStatus.PENDING);
 
         List<Expense> expenses = expenseRepository.findByGatheringId(gatheringId);
         List<ExpenseParticipant> allParticipants = new ArrayList<>();
@@ -56,12 +54,15 @@ public class SettlementService {
             allParticipants.addAll(participantRepository.findByExpenseId(expense.id()));
         }
 
-        List<Settlement> settlements = settlementCalculator.calculate(gatheringId, expenses, allParticipants);
-        List<Settlement> savedSettlements = settlementRepository.saveAll(settlements);
+        List<Settlement> newSettlements = settlementCalculator.calculate(gatheringId, expenses, allParticipants, completedSettlements);
+        List<Settlement> savedNewSettlements = settlementRepository.saveAll(newSettlements);
 
-        log.info("정산이 계산되었습니다. gathering: {}, settlements: {}", gatheringId, savedSettlements.size());
+        log.info("정산이 계산되었습니다. gathering: {}, 확정: {}, 신규: {}", gatheringId, completedSettlements.size(), savedNewSettlements.size());
 
-        return savedSettlements.stream()
+        List<Settlement> allSettlements = new ArrayList<>(completedSettlements);
+        allSettlements.addAll(savedNewSettlements);
+
+        return allSettlements.stream()
             .map(s -> {
                 User fromUser = userService.findById(s.fromUserId());
                 User toUser = userService.findById(s.toUserId());
@@ -162,4 +163,5 @@ public class SettlementService {
         return settlementRepository.findById(id)
             .orElseThrow(() -> new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND));
     }
+
 }
