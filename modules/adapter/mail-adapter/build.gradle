@@ -1,0 +1,12 @@
+plugins {
+    id 'java-library'
+}
+
+// Mail adapter - 이메일 발송 관련 구현체 포함
+dependencies {
+    // Domain modules
+    implementation project(':modules:domain:identity')
+
+    // Spring Mail
+    implementation "org.springframework.boot:spring-boot-starter-mail"
+}

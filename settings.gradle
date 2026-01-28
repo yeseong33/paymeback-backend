@@ -8,8 +8,10 @@ include(":modules:domain:gathering")
 include(":modules:domain:rate-limit")
 include(":modules:domain:cache")
 include(":modules:domain:payment")
+include(":modules:domain:identity")
 
 // Adapter modules
 include(":modules:adapter:jpa-adapter")
 include(":modules:adapter:aop-adapter")
 include(":modules:adapter:redis-adapter")
+include(":modules:adapter:mail-adapter")

@@ -2,29 +2,40 @@ package com.paymeback.domain.user.service;
 
 import com.paymeback.common.exception.BusinessException;
 import com.paymeback.common.exception.ErrorCode;
+import com.paymeback.identity.domain.OtpVerification;
+import com.paymeback.identity.port.OtpSender;
+import com.paymeback.identity.port.OtpStore;
 import com.paymeback.ratelimit.RateLimit;
-import com.paymeback.domain.identity.service.OtpService;
 import com.paymeback.user.domain.User;
 import com.paymeback.domain.user.dto.SignInRequest;
 import com.paymeback.domain.user.dto.SignUpRequest;
 import com.paymeback.domain.user.dto.UserResponse;
 import com.paymeback.domain.security.jwt.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
 
     private final UserService userService;
-    private final OtpService otpService;
+    private final OtpVerification otpVerification;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+
+    public AuthService(UserService userService, OtpStore otpStore, OtpSender otpSender,
+                       JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder,
+                       @Value("${app.otp.length:6}") int otpLength,
+                       @Value("${app.otp.expiration-minutes:5}") int expirationMinutes) {
+        this.userService = userService;
+        this.otpVerification = new OtpVerification(otpStore, otpSender, otpLength, expirationMinutes);
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     @RateLimit(key = "signup", maxAttempts = 5, windowSeconds = 3600)
@@ -32,7 +43,7 @@ public class AuthService {
         UserResponse userResponse = userService.createUser(request);
 
         // OTP 발송
-        otpService.generateAndSendOtp(request.email());
+        otpVerification.generateAndSend(request.email());
 
         return userResponse;
     }

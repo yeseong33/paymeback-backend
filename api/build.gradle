@@ -11,17 +11,18 @@ dependencies {
     implementation project(":modules:domain:rate-limit")
     implementation project(":modules:domain:cache")
     implementation project(":modules:domain:payment")
+    implementation project(":modules:domain:identity")
 
     // Adapter modules
     implementation project(":modules:adapter:jpa-adapter")
     implementation project(":modules:adapter:aop-adapter")
     implementation project(":modules:adapter:redis-adapter")
+    implementation project(":modules:adapter:mail-adapter")
 
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // transaction
     implementation "org.springframework:spring-tx"

@@ -1,17 +1,18 @@
-package com.paymeback.domain.identity.service;
+package com.paymeback.identity.adapter;
 
+import com.paymeback.identity.port.OtpSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
-public class OtpEmailService {
+public class OtpEmailAdapter implements OtpSender {
 
     private final JavaMailSender mailSender;
 
@@ -19,7 +20,8 @@ public class OtpEmailService {
     private int otpExpirationMinutes;
 
     @Async
-    public void sendOtpEmail(String email, String otpCode) {
+    @Override
+    public void send(String email, String otpCode) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
@@ -38,7 +40,6 @@ public class OtpEmailService {
 
         } catch (Exception e) {
             log.error("OTP 이메일 발송에 실패했습니다. email: {}", email, e);
-            // 비동기이므로 예외를 던지지 않고 로그만 남김
         }
     }
 }

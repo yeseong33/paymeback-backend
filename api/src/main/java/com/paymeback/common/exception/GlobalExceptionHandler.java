@@ -1,5 +1,7 @@
 package com.paymeback.common.exception;
 
+import com.paymeback.identity.exception.InvalidOtpException;
+import com.paymeback.identity.exception.OtpExpiredException;
 import com.paymeback.gathering.exception.GatheringNotJoinableException;
 import com.paymeback.gathering.exception.GatheringNotReadyForPaymentException;
 import com.paymeback.gathering.exception.NotGatheringOwnerException;
@@ -127,6 +129,23 @@ public class GlobalExceptionHandler {
         log.error("UserNotVerifiedException", e);
         ErrorResponse response = ErrorResponse.of(ErrorCode.USER_NOT_VERIFIED);
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * OTP 도메인 예외 처리
+     */
+    @ExceptionHandler(InvalidOtpException.class)
+    protected ResponseEntity<ErrorResponse> handleInvalidOtpException(InvalidOtpException e) {
+        log.error("InvalidOtpException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_OTP);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OtpExpiredException.class)
+    protected ResponseEntity<ErrorResponse> handleOtpExpiredException(OtpExpiredException e) {
+        log.error("OtpExpiredException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.OTP_NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     /**

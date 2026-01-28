@@ -7,6 +7,7 @@ dependencies {
     // Domain modules
     implementation project(':modules:domain:rate-limit')
     implementation project(':modules:domain:cache')
+    implementation project(':modules:domain:identity')
 
     // Redis
     implementation "org.springframework.boot:spring-boot-starter-data-redis"
