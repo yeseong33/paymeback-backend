@@ -193,6 +193,12 @@ public class GatheringService {
             .orElseThrow(() -> new BusinessException(ErrorCode.GATHERING_NOT_FOUND));
     }
 
+    public void existById(Long id) {
+        if (!gatheringRepository.existsById(id)) {
+            throw new BusinessException(ErrorCode.GATHERING_NOT_FOUND);
+        }
+    }
+
     private void validateJoinGathering(Gathering gathering, User user) {
         // QR 코드 만료 검증
         if (gathering.isQrCodeExpired()) {

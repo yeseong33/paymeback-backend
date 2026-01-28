@@ -22,4 +22,6 @@ public interface GatheringRepositoryPort {
     Page<Gathering> findByParticipantUserId(Long userId, Pageable pageable);
 
     long countByOwnerIdAndStatus(Long ownerId, GatheringStatus status);
+
+    boolean existsById(Long id);
 }

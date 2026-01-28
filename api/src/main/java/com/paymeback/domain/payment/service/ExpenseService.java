@@ -2,13 +2,14 @@ package com.paymeback.domain.payment.service;
 
 import com.paymeback.common.exception.BusinessException;
 import com.paymeback.common.exception.ErrorCode;
+import com.paymeback.domain.gathering.service.GatheringService;
 import com.paymeback.domain.payment.dto.CreateExpenseRequest;
 import com.paymeback.domain.payment.dto.ExpenseResponse;
 import com.paymeback.domain.user.service.UserService;
-import com.paymeback.gathering.repository.GatheringRepositoryPort;
 import com.paymeback.payment.domain.Expense;
 import com.paymeback.payment.domain.ExpenseParticipant;
-import com.paymeback.payment.domain.ShareType;
+import com.paymeback.payment.domain.ExpenseParticipants;
+import com.paymeback.payment.domain.ExpenseParticipants.ParticipantShare;
 import com.paymeback.payment.repository.ExpenseParticipantRepositoryPort;
 import com.paymeback.payment.repository.ExpenseRepositoryPort;
 import com.paymeback.user.domain.User;
@@ -17,10 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -31,19 +29,19 @@ public class ExpenseService {
 
     private final ExpenseRepositoryPort expenseRepository;
     private final ExpenseParticipantRepositoryPort participantRepository;
-    private final GatheringRepositoryPort gatheringRepository;
+    private final GatheringService gatheringService;
     private final UserService userService;
 
     @Transactional
     public ExpenseResponse createExpense(CreateExpenseRequest request, String userEmail) {
+        // 검증
         User payer = userService.findByEmail(userEmail);
+        gatheringService.existById(request.gatheringId());
 
-        gatheringRepository.findById(request.gatheringId())
-            .orElseThrow(() -> new BusinessException(ErrorCode.GATHERING_NOT_FOUND));
-
+        // 생성 및 저장
         Instant paidAt = request.paidAt() != null ? Instant.ofEpochMilli(request.paidAt()) : Instant.now();
 
-        Expense expense = Expense.create(
+        Expense savedExpense = expenseRepository.save(Expense.create(
             request.gatheringId(),
             payer.id(),
             request.totalAmount(),
@@ -52,20 +50,23 @@ public class ExpenseService {
             request.category(),
             paidAt,
             request.receiptImageUrl()
-        );
-
-        Expense savedExpense = expenseRepository.save(expense);
+        ));
         log.info("지출이 생성되었습니다. id: {}, gathering: {}", savedExpense.id(), request.gatheringId());
 
-        List<ExpenseParticipant> participants = createParticipants(
+        List<ParticipantShare> shares = request.participants().stream()
+            .map(ps -> new ParticipantShare(ps.userId(), ps.shareValue()))
+            .toList();
+
+        ExpenseParticipants participants = ExpenseParticipants.distribute(
             savedExpense.id(),
             request.totalAmount(),
             request.shareType(),
-            request.participants()
+            shares
         );
 
-        List<ExpenseParticipant> savedParticipants = participantRepository.saveAll(participants);
+        List<ExpenseParticipant> savedParticipants = participantRepository.saveAll(participants.toList());
 
+        // 응답 조립: 저장된 참여자 기준으로 유저 조회
         List<User> participantUsers = savedParticipants.stream()
             .map(p -> userService.findById(p.userId()))
             .toList();
@@ -122,75 +123,4 @@ public class ExpenseService {
             .orElseThrow(() -> new BusinessException(ErrorCode.EXPENSE_NOT_FOUND));
     }
 
-    private List<ExpenseParticipant> createParticipants(
-        Long expenseId,
-        BigDecimal totalAmount,
-        ShareType shareType,
-        List<CreateExpenseRequest.ParticipantShare> participantShares
-    ) {
-        List<ExpenseParticipant> participants = new ArrayList<>();
-        int participantCount = participantShares.size();
-
-        switch (shareType) {
-            case EQUAL -> {
-                BigDecimal shareAmount = roundDownToTen(
-                    totalAmount.divide(BigDecimal.valueOf(participantCount), 0, RoundingMode.DOWN)
-                );
-                BigDecimal allocated = shareAmount.multiply(BigDecimal.valueOf(participantCount - 1));
-                BigDecimal lastShareAmount = totalAmount.subtract(allocated);
-
-                for (int i = 0; i < participantShares.size(); i++) {
-                    CreateExpenseRequest.ParticipantShare ps = participantShares.get(i);
-                    BigDecimal amount = (i == participantShares.size() - 1) ? lastShareAmount : shareAmount;
-                    participants.add(ExpenseParticipant.create(
-                        expenseId,
-                        ps.userId(),
-                        amount,
-                        ShareType.EQUAL,
-                        null
-                    ));
-                }
-            }
-            case CUSTOM -> {
-                for (CreateExpenseRequest.ParticipantShare ps : participantShares) {
-                    BigDecimal shareAmount = ps.shareValue() != null ? ps.shareValue() : BigDecimal.ZERO;
-                    participants.add(ExpenseParticipant.create(
-                        expenseId,
-                        ps.userId(),
-                        shareAmount,
-                        ShareType.CUSTOM,
-                        shareAmount
-                    ));
-                }
-            }
-            case PERCENTAGE -> {
-                for (CreateExpenseRequest.ParticipantShare ps : participantShares) {
-                    BigDecimal percentage = ps.shareValue() != null ? ps.shareValue() : BigDecimal.ZERO;
-                    BigDecimal shareAmount = roundToTen(
-                        totalAmount.multiply(percentage)
-                            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
-                    );
-                    participants.add(ExpenseParticipant.create(
-                        expenseId,
-                        ps.userId(),
-                        shareAmount,
-                        ShareType.PERCENTAGE,
-                        percentage
-                    ));
-                }
-            }
-        }
-
-        return participants;
-    }
-
-    private static final BigDecimal TEN = BigDecimal.TEN;
-
-    private BigDecimal roundDownToTen(BigDecimal amount) {
-        return amount.divide(TEN, 0, RoundingMode.DOWN).multiply(TEN);
-    }
-
-    private BigDecimal roundToTen(BigDecimal amount) {
-        return amount.divide(TEN, 0, RoundingMode.HALF_UP).multiply(TEN);
-    }
 }

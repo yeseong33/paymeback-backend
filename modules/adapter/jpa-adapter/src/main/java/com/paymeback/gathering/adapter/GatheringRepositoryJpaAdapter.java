@@ -81,4 +81,9 @@ public class GatheringRepositoryJpaAdapter implements GatheringRepositoryPort {
     public long countByOwnerIdAndStatus(Long ownerId, GatheringStatus status) {
         return gatheringRepo.countByOwnerIdAndStatus(ownerId, status);
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return gatheringRepo.existsById(id);
+    }
 }
