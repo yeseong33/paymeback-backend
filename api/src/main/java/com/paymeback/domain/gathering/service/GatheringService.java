@@ -84,16 +84,7 @@ public class GatheringService {
         User user = userService.findByEmail(userEmail);
         Gathering gathering = findById(gatheringId);
 
-        // 권한 검증
-        if (!gathering.isOwner(user.id())) {
-            throw new BusinessException(ErrorCode.NOT_GATHERING_OWNER);
-        }
-
-        // 참여자 수 확인
-        long participantCount = participantRepository.countByGatheringId(gatheringId);
-        if (!gathering.canJoin() || participantCount == 0) {
-            throw new BusinessException(ErrorCode.GATHERING_NOT_READY_FOR_PAYMENT);
-        }
+        gathering.validateOwner(user.id());
 
         Gathering updatedGathering = gathering.withTotalAmount(totalAmount);
         Gathering savedGathering = gatheringRepository.save(updatedGathering);
@@ -137,9 +128,7 @@ public class GatheringService {
         User user = userService.findByEmail(userEmail);
         Gathering gathering = findById(gatheringId);
 
-        if (!gathering.isOwner(user.id())) {
-            throw new BusinessException(ErrorCode.NOT_GATHERING_OWNER);
-        }
+        gathering.validateOwner(user.id());
 
         Gathering closedGathering = gathering.close();
         gatheringRepository.save(closedGathering);
@@ -151,9 +140,7 @@ public class GatheringService {
         User user = userService.findByEmail(userEmail);
         Gathering gathering = findById(gatheringId);
 
-        if (!gathering.isOwner(user.id())) {
-            throw new BusinessException(ErrorCode.NOT_GATHERING_OWNER);
-        }
+        gathering.validateOwner(user.id());
 
         String newQrCode = qrCodeService.generateQRCode();
         Gathering updatedGathering = gathering.refreshQrCode(newQrCode, qrCodeService.calculateExpirationTime());
@@ -169,9 +156,7 @@ public class GatheringService {
         User user = userService.findByEmail(userEmail);
         Gathering gathering = findById(gatheringId);
 
-        if (!gathering.isOwner(user.id())) {
-            throw new BusinessException(ErrorCode.NOT_GATHERING_OWNER);
-        }
+        gathering.validateOwner(user.id());
 
         Instant startAt = request.startAt() != null ? Instant.ofEpochMilli(request.startAt()) : null;
         Instant endAt = request.endAt() != null ? Instant.ofEpochMilli(request.endAt()) : null;
@@ -200,17 +185,9 @@ public class GatheringService {
     }
 
     private void validateJoinGathering(Gathering gathering, User user) {
-        // QR 코드 만료 검증
-        if (gathering.isQrCodeExpired()) {
-            throw new BusinessException(ErrorCode.QR_CODE_EXPIRED);
-        }
+        gathering.validateJoinable();
 
-        // 모임 상태 검증
-        if (!gathering.canJoin()) {
-            throw new BusinessException(ErrorCode.GATHERING_ALREADY_CLOSED);
-        }
-
-        // 중복 참여 검증
+        // 중복 참여 검증 (Repository 의존)
         if (participantRepository.existsByGatheringIdAndUserId(gathering.id(), user.id())) {
             throw new BusinessException(ErrorCode.ALREADY_PARTICIPATED);
         }

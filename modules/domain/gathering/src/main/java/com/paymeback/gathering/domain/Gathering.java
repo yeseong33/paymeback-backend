@@ -1,5 +1,10 @@
 package com.paymeback.gathering.domain;
 
+import com.paymeback.gathering.exception.GatheringNotJoinableException;
+import com.paymeback.gathering.exception.GatheringNotReadyForPaymentException;
+import com.paymeback.gathering.exception.NotGatheringOwnerException;
+import com.paymeback.gathering.exception.QrCodeExpiredException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -59,7 +64,7 @@ public record Gathering(
 
     public Gathering refreshQrCode(String newQrCode, Instant newExpiresAt) {
         if (this.status != GatheringStatus.ACTIVE) {
-            throw new IllegalStateException("활성 상태가 아닌 모임의 QR 코드는 갱신할 수 없습니다.");
+            throw new GatheringNotReadyForPaymentException();
         }
         return new Gathering(
             id, title, description, ownerId, newQrCode, newExpiresAt,
@@ -91,6 +96,21 @@ public record Gathering(
         return ownerId.equals(userId);
     }
 
+    public void validateOwner(Long userId) {
+        if (!isOwner(userId)) {
+            throw new NotGatheringOwnerException();
+        }
+    }
+
+    public void validateJoinable() {
+        if (isQrCodeExpired()) {
+            throw new QrCodeExpiredException();
+        }
+        if (status != GatheringStatus.ACTIVE) {
+            throw new GatheringNotJoinableException();
+        }
+    }
+
     public int getParticipantCount() {
         return participantIds != null ? participantIds.size() : 0;
     }
@@ -104,10 +124,10 @@ public record Gathering(
 
     private void validatePaymentRequestCreation() {
         if (status != GatheringStatus.ACTIVE) {
-            throw new IllegalStateException("활성 상태가 아닌 모임에는 결제 요청을 생성할 수 없습니다.");
+            throw new GatheringNotReadyForPaymentException();
         }
         if (getParticipantCount() == 0) {
-            throw new IllegalStateException("참여자가 없는 모임에는 결제 요청을 생성할 수 없습니다.");
+            throw new GatheringNotReadyForPaymentException();
         }
     }
 }

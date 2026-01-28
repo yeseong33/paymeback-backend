@@ -1,5 +1,9 @@
 package com.paymeback.common.exception;
 
+import com.paymeback.gathering.exception.GatheringNotJoinableException;
+import com.paymeback.gathering.exception.GatheringNotReadyForPaymentException;
+import com.paymeback.gathering.exception.NotGatheringOwnerException;
+import com.paymeback.gathering.exception.QrCodeExpiredException;
 import com.paymeback.ratelimit.RateLimitExceededException;
 import com.paymeback.user.exception.PasswordMismatchException;
 import com.paymeback.user.exception.UserNotFoundException;
@@ -123,6 +127,37 @@ public class GlobalExceptionHandler {
         log.error("UserNotVerifiedException", e);
         ErrorResponse response = ErrorResponse.of(ErrorCode.USER_NOT_VERIFIED);
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * 모임 도메인 예외 처리
+     */
+    @ExceptionHandler(NotGatheringOwnerException.class)
+    protected ResponseEntity<ErrorResponse> handleNotGatheringOwnerException(NotGatheringOwnerException e) {
+        log.error("NotGatheringOwnerException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.NOT_GATHERING_OWNER);
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(QrCodeExpiredException.class)
+    protected ResponseEntity<ErrorResponse> handleQrCodeExpiredException(QrCodeExpiredException e) {
+        log.error("QrCodeExpiredException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.QR_CODE_EXPIRED);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(GatheringNotJoinableException.class)
+    protected ResponseEntity<ErrorResponse> handleGatheringNotJoinableException(GatheringNotJoinableException e) {
+        log.error("GatheringNotJoinableException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.GATHERING_ALREADY_CLOSED);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(GatheringNotReadyForPaymentException.class)
+    protected ResponseEntity<ErrorResponse> handleGatheringNotReadyForPaymentException(GatheringNotReadyForPaymentException e) {
+        log.error("GatheringNotReadyForPaymentException", e);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.GATHERING_NOT_READY_FOR_PAYMENT);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     /**
